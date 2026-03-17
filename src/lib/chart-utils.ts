@@ -60,8 +60,7 @@ export function aggregateByPeriod(
 }
 
 export function stackedWeeklyData(
-  journals: JournalEntry[],
-  _goals: Goal[]
+  journals: JournalEntry[]
 ): { week: string; label: string; [goalId: string]: string | number }[] {
   const weekMap = new Map<string, Record<string, number>>();
   for (const j of journals) {

@@ -21,7 +21,7 @@ export function StackedGoalsBar({ journals, goals, palette }: Props) {
   const tooltipBg = isDark ? '#161616' : '#ffffff';
   const tooltipBorder = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
 
-  const data = useMemo(() => stackedWeeklyData(journals, goals).slice(-12), [journals, goals]);
+  const data = useMemo(() => stackedWeeklyData(journals).slice(-12), [journals]);
 
   return (
     <div className="rounded-2xl border p-6" style={{ background: 'var(--gs-card)', borderColor: 'var(--gs-border)' }}>
