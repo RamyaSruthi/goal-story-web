@@ -318,7 +318,7 @@ export default function LandingPage() {
             <div className="relative">
               <AnimatedTarget />
               <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: 'var(--gs-text)' }}>
-                Don't just set goals.<br />Prove you meant them.
+                Don&apos;t just set goals.<br />Prove you meant them.
               </h2>
               <p className="text-base mb-8 max-w-md mx-auto" style={{ color: 'var(--gs-text-dim)' }}>
                 Track every hour. Journal every session. Build a visual record of your consistency — free, forever.
