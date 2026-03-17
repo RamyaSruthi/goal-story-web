@@ -93,7 +93,7 @@ export function cumulativePerGoal(
   return dates.map((date) => {
     const day = dayTotals[date] ?? {};
     for (const g of goals) running[g.id] += day[g.id] ?? 0;
-    const row: Record<string, string | number> = { date };
+    const row: { date: string; [goalId: string]: string | number } = { date };
     goals.forEach((g) => { row[g.id] = Math.round((running[g.id] / 60) * 10) / 10; });
     return row;
   });
