@@ -1,5 +1,12 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight, Target, PenLine, TrendingUp } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Goal Story — Free Goal Tracker & Habit Tracker App',
+  description: 'Goal Story is a free goal tracker and habit tracker. Set goals, track time with a focus timer, journal your sessions, and visualize consistency with heatmaps, streaks, and charts.',
+  alternates: { canonical: 'https://goalstory.app' },
+};
 import { ScrollReveal } from '@/components/landing/scroll-reveal';
 import { AnimatedWeekBarMockup } from '@/components/landing/animated-week-bar-mockup';
 import { AnimatedBentoVisual } from '@/components/landing/animated-bento-visuals';
