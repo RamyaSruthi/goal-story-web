@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,6 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
 export function AuthForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [isSignUp, setIsSignUp] = useState(false);
 
@@ -34,10 +33,22 @@ export function AuthForm() {
         if (error) throw error;
         toast.success('Account created! Check your email to confirm.');
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        router.push('/app/today');
-        router.refresh();
+        // Write session cookies server-side so they persist reliably across
+        // browser restarts (avoids Safari ITP wiping JS-set cookies).
+        if (data.session) {
+          await fetch('/api/auth/set-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              access_token: data.session.access_token,
+              refresh_token: data.session.refresh_token,
+            }),
+          });
+        }
+        // Full page navigation so the middleware sees the freshly-set cookies.
+        window.location.href = '/app/today';
       }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Something went wrong');
