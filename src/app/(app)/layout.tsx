@@ -2,6 +2,7 @@ import { Sidebar } from '@/components/layout/sidebar/sidebar';
 import { MobileNav } from '@/components/layout/mobile-nav';
 import { StoreInitializer } from '@/components/store-initializer';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { GlobalTimerOverlay } from '@/components/timer/global-timer-overlay';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -25,6 +26,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <ErrorBoundary>{children}</ErrorBoundary>
         </div>
       </main>
+
+      {/* Global timer overlay — persists across route changes */}
+      <GlobalTimerOverlay />
 
       {/* Bottom nav: mobile only */}
       <MobileNav />

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Goal, Task } from '@/types';
 import { resolveGoalColor } from '@/lib/utils';
 import { useTheme } from 'next-themes';
-import { TimerDialog } from '@/components/timer/timer-dialog';
+import { useStore } from '@/store/use-store';
 import { QuickLogDialog } from './quick-log-dialog';
 import { EditTaskDialog } from './edit-task-dialog';
 import { Play, Pencil } from 'lucide-react';
@@ -17,7 +17,7 @@ interface Props {
 export function TaskRow({ goal, task }: Props) {
   const { theme } = useTheme();
   const color = resolveGoalColor(goal.color, theme ?? 'dark');
-  const [timerOpen, setTimerOpen] = useState(false);
+  const { openTimer } = useStore();
   const [quickLogOpen, setQuickLogOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
@@ -76,7 +76,7 @@ export function TaskRow({ goal, task }: Props) {
           </button>
           {!task.done && (
             <button
-              onClick={() => setTimerOpen(true)}
+              onClick={() => openTimer(goal, task)}
               className="flex items-center gap-1 pl-2 pr-2.5 py-1 rounded-lg text-[11px] font-semibold transition-opacity hover:opacity-80"
               style={{ background: `${goal.color}20`, color }}
               title="Start timer"
@@ -88,7 +88,6 @@ export function TaskRow({ goal, task }: Props) {
         </div>
       </div>
 
-      {timerOpen && <TimerDialog goal={goal} initialTask={task} open={timerOpen} onClose={() => setTimerOpen(false)} />}
       {quickLogOpen && <QuickLogDialog open={quickLogOpen} onClose={() => setQuickLogOpen(false)} goal={goal} task={task} />}
       {editOpen && <EditTaskDialog open={editOpen} onClose={() => setEditOpen(false)} goalId={goal.id} task={task} />}
     </>

@@ -10,9 +10,11 @@ export function StoreInitializer() {
   useEffect(() => {
     const supabase = createClient();
 
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        setUserId(user.id);
+    // getSession() reads from cookies and refreshes via refresh token if needed —
+    // more reliable than getUser() for initial load after the access token has expired.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUserId(session.user.id);
         loadData();
       }
     });
@@ -21,7 +23,7 @@ export function StoreInitializer() {
       if (event === 'SIGNED_OUT') {
         // Only clear on explicit sign-out, not on transient session events
         clearData();
-      } else if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
+      } else if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session?.user) {
         setUserId(session.user.id);
         loadData();
       }

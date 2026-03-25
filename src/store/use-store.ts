@@ -13,6 +13,11 @@ interface StoreState {
   reminderEnabled: boolean;
   reminderHour: number;
 
+  timerGoal: Goal | null;
+  timerTask: Task | null;
+  openTimer: (goal: Goal, task?: Task | null) => void;
+  closeTimer: () => void;
+
   setUserId: (id: string | null) => void;
   clearData: () => void;
   deleteAccount: () => Promise<void>;
@@ -44,6 +49,11 @@ export const useStore = create<StoreState>()(
       isLoading: false,
       reminderEnabled: false,
       reminderHour: 9,
+
+      timerGoal: null,
+      timerTask: null,
+      openTimer: (goal, task = null) => set({ timerGoal: goal, timerTask: task ?? null }),
+      closeTimer: () => set({ timerGoal: null, timerTask: null }),
 
       setUserId: (id) => set({ userId: id }),
 

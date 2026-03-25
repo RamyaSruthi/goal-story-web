@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from '@/store/use-store';
 import { useTheme } from 'next-themes';
 import { Goal, Task } from '@/types';
@@ -27,37 +27,69 @@ export function TimerDialog({ goal, initialTask, open, onClose }: Props) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(initialTask ?? null);
   const [note, setNote] = useState('');
   const toneFiredRef = useRef(false);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const pendingChimeRef = useRef(false);
 
   const { elapsed, running, displaySecs, timesUp, start, pause } = useTimer({
     estimatedMins: selectedTask?.estimatedMins ?? 0,
   });
 
+  // Create AudioContext on mount (dialog opened via user click — gesture context is active)
+  useEffect(() => {
+    try {
+      audioCtxRef.current = new AudioContext();
+    } catch { /* not available */ }
+    return () => {
+      audioCtxRef.current?.close();
+      audioCtxRef.current = null;
+    };
+  }, []);
+
+  const playChime = useCallback(async () => {
+    try {
+      const ctx = audioCtxRef.current ?? new AudioContext();
+      audioCtxRef.current = ctx;
+      if (ctx.state === 'suspended') await ctx.resume();
+      const notes = [523, 659, 784, 1047]; // C5 E5 G5 C6
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        const t = ctx.currentTime + i * 0.18;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.25, t + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
+        osc.start(t);
+        osc.stop(t + 0.9);
+      });
+      pendingChimeRef.current = false;
+    } catch {
+      // Tab may be in background — mark pending, play when visible
+      pendingChimeRef.current = true;
+    }
+  }, []);
+
   // Play a chime when timer ends
   useEffect(() => {
     if (timesUp && !toneFiredRef.current) {
       toneFiredRef.current = true;
-      try {
-        const ctx = new AudioContext();
-        const notes = [523, 659, 784, 1047]; // C5 E5 G5 C6
-        notes.forEach((freq, i) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.type = 'sine';
-          osc.frequency.value = freq;
-          const t = ctx.currentTime + i * 0.18;
-          gain.gain.setValueAtTime(0, t);
-          gain.gain.linearRampToValueAtTime(0.25, t + 0.04);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
-          osc.start(t);
-          osc.stop(t + 0.9);
-        });
-      } catch {
-        // AudioContext not available
-      }
+      playChime();
     }
-  }, [timesUp]);
+  }, [timesUp, playChime]);
+
+  // If chime was pending (tab in background), play when user returns
+  useEffect(() => {
+    const onVisible = () => {
+      if (!document.hidden && pendingChimeRef.current) {
+        playChime();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [playChime]);
 
   // Auto-start when entering timer phase
   useEffect(() => {
